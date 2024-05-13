@@ -19,6 +19,7 @@
 #include <linux/pci.h>
 #include <linux/version.h>
 #include <linux/module.h>
+#include <linux/dma-map-ops.h>
 
 #ifdef MIC_IN_KERNEL_BUILD
 #include <linux/mic_common.h>
@@ -43,8 +44,8 @@ _mic_map_single(struct mic_device *xdev, void *va, size_t size)
 	if (xdev->link_side)
 		return mic_map_single(xdev, va, size);
 
-	dma_addr = pci_map_single(xdev->pdev, va, size, PCI_DMA_BIDIRECTIONAL);
-	if (pci_dma_mapping_error(xdev->pdev, dma_addr)) {
+	dma_addr = dma_map_single(&xdev->pdev->dev, va, size, DMA_BIDIRECTIONAL);
+	if (dma_mapping_error(&xdev->pdev->dev, dma_addr)) {
 		dev_err(&xdev->pdev->dev,
 			"Cannot map va: %p, size: %zu\n", va, size);
 		return 0;
@@ -59,8 +60,8 @@ _mic_unmap_single(struct mic_device *xdev, dma_addr_t mic_addr,
 	if (xdev->link_side)
 		mic_unmap_single(xdev, mic_addr, size);
 	else
-		pci_unmap_single(xdev->pdev, mic_addr, size,
-			PCI_DMA_BIDIRECTIONAL);
+		dma_unmap_single(&xdev->pdev->dev, mic_addr, size,
+			DMA_BIDIRECTIONAL);
 }
 
 static inline struct mic_device *scdev_to_xdev(struct scif_hw_dev *scdev)
@@ -308,9 +309,9 @@ static dma_addr_t ___map_peer_resource(struct scif_hw_dev *sdev,
 	if (xdev->alut)
 		return mic_map(xdev, addr, len);
 
-	dma_addr = pci_map_page(xdev->pdev, pfn_to_page(addr >> PAGE_SHIFT), 0,
-				len, PCI_DMA_BIDIRECTIONAL);
-	if (pci_dma_mapping_error(xdev->pdev, dma_addr)) {
+	dma_addr = dma_map_page(&xdev->pdev->dev, pfn_to_page(addr >> PAGE_SHIFT), 0,
+				len, DMA_BIDIRECTIONAL);
+	if (dma_mapping_error(&xdev->pdev->dev, dma_addr)) {
 		dev_err(&xdev->pdev->dev,
 			"Cannot map addr: 0x%llx, len: %lld\n", addr, len);
 		return 0;
@@ -326,7 +327,7 @@ static void ___unmap_peer_resource(struct scif_hw_dev *sdev, dma_addr_t addr,
 	if (xdev->alut)
 		mic_unmap(xdev, addr, len);
 	else
-		pci_unmap_page(xdev->pdev, addr, len, PCI_DMA_BIDIRECTIONAL);
+		dma_unmap_page(&xdev->pdev->dev, addr, len, DMA_BIDIRECTIONAL);
 }
 
 static struct scif_hw_ops scif_hw_ops = {
