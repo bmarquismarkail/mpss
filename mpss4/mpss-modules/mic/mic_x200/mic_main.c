@@ -212,7 +212,8 @@ static int mic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	 * Set 48-bit mask, so driver can be loaded without crash when
 	 * running on huge memory system without IOMMU
 	 */
-	mask = intel_iommu_enabled ? DMA_BIT_MASK(39) : DMA_BIT_MASK(48);
+	//mask = intel_iommu_enabled ? DMA_BIT_MASK(39) : DMA_BIT_MASK(48);
+  mask = DMA_BIT_MASK(39);
 	rc = dma_set_mask_and_coherent(&pdev->dev, mask);
 	if (rc) {
 		log_mic_err(xdev->id, "cannot set DMA mask: 0x%llx", mask);
