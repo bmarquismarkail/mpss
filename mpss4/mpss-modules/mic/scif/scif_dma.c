@@ -219,21 +219,27 @@ static void scif_mmu_notifier_invalidate_page(struct mmu_notifier *mn,
 }
 #endif
 
-static void scif_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
-						     struct mm_struct *mm,
-						     unsigned long start,
-						     unsigned long end)
+static int scif_mmu_notifier_invalidate_range_start(struct mmu_notifier *subscription,
+                                                    const struct mmu_notifier_range *range)
 {
-	struct scif_mmu_notif	*mmn;
+    struct scif_mmu_notif *mmn;
+    unsigned long start, end;
 
-	mmn = container_of(mn, struct scif_mmu_notif, ep_mmu_notifier);
-	scif_rma_destroy_tcw(mmn, start, end - start);
+    // Extract start and end from the range structure
+    start = range->start;
+    end = range->end;
+
+    // Get the scif_mmu_notif structure from the subscription (mn)
+    mmn = container_of(subscription, struct scif_mmu_notif, ep_mmu_notifier);
+
+    // Call the function with the extracted start and length (end - start)
+    scif_rma_destroy_tcw(mmn, start, end - start);
+
+    return 0; // Return 0 on success
 }
 
-static void scif_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-						   struct mm_struct *mm,
-						   unsigned long start,
-						   unsigned long end)
+static void scif_mmu_notifier_invalidate_range_end(struct mmu_notifier *subscription,
+                                                  const struct mmu_notifier_range *range)
 {
 	/*
 	 * Nothing to do here, everything needed was done in
@@ -1610,7 +1616,7 @@ static int scif_rma_list_dma_copy_wrapper(struct scif_endpt *epd,
 	src_local = work->src_window->type == SCIF_WINDOW_SELF;
 	dst_local = work->dst_window->type == SCIF_WINDOW_SELF;
 
-	dst_local = dst_local;
+//	dst_local = dst_local;
 	/* Allocate dma_completion cb */
 	comp_cb = kzalloc(sizeof(*comp_cb), GFP_KERNEL);
 	if (!comp_cb)
