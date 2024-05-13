@@ -242,7 +242,7 @@ void mic_unmap(struct mic_device *xdev, dma_addr_t mic_addr, size_t size)
  * @va: Kernel direct mapped virtual address.
  * @size: Size of the region to be mapped.
  *
- * This API calls pci_map_single(..) for the direct mapped virtual address
+ * This API calls dma_map_single(..) for the direct mapped virtual address
  * and then converts the DMA address provided to a DMA address understood
  * by MIC. Caller should check for errors by calling mic_map_error(..).
  *
@@ -253,16 +253,16 @@ dma_addr_t mic_map_single(struct mic_device *xdev, void *va, size_t size)
 	dma_addr_t mic_addr = 0;
 	struct pci_dev *pdev = xdev->pdev;
 	dma_addr_t dma_addr =
-			pci_map_single(pdev, va, size, PCI_DMA_BIDIRECTIONAL);
+			dma_map_single(&pdev->dev, va, size, DMA_BIDIRECTIONAL);
 
-	if (!pci_dma_mapping_error(pdev, dma_addr)) {
+	if (!dma_mapping_error(&pdev->dev, dma_addr)) {
 		mic_addr = mic_map(xdev, dma_addr, size);
 		if (!mic_addr) {
 			dev_err(&xdev->pdev->dev,
 				"mic_map failed dma_addr 0x%llx size 0x%lx\n",
 				dma_addr, size);
-			pci_unmap_single(pdev, dma_addr,
-					 size, PCI_DMA_BIDIRECTIONAL);
+			dma_unmap_single(&pdev->dev, dma_addr,
+					 size, DMA_BIDIRECTIONAL);
 		}
 	}
 	return mic_addr;
@@ -286,7 +286,7 @@ mic_unmap_single(struct mic_device *xdev, dma_addr_t mic_addr, size_t size)
 	struct pci_dev *pdev = xdev->pdev;
 	dma_addr_t dma_addr = mic_to_dma_addr(xdev, mic_addr);
 	mic_unmap(xdev, mic_addr, size);
-	pci_unmap_single(pdev, dma_addr, size, PCI_DMA_BIDIRECTIONAL);
+	dma_unmap_single(&pdev->dev, dma_addr, size, DMA_BIDIRECTIONAL);
 }
 
 /**
@@ -365,7 +365,7 @@ int mic_alut_init(struct mic_device *xdev)
 	dma_addr_t dma_addr;
 	struct mic_alut_info *alut;
 	/* don't enable alut if IOMMU is enabled */
-	if (intel_iommu_enabled)
+	//if (intel_iommu_enabled)
 		return 0;
 
 	xdev->alut = kzalloc(sizeof(*xdev->alut), GFP_KERNEL);
