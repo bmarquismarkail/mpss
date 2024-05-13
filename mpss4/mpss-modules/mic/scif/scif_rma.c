@@ -780,7 +780,8 @@ scif_map_window(struct scif_dev *remote_dev, struct scif_window *window)
 
 	pin = window->pinned_pages;
 
-	if (intel_iommu_enabled && !scifdev_self(remote_dev))
+	//if (intel_iommu_enabled && !scifdev_self(remote_dev))
+	if (!scifdev_self(remote_dev))
 		return scif_dma_map(remote_dev, window);
 
 	for (i = 0, j = 0; i < window->nr_pages; i += nr_contig_pages, j++) {
