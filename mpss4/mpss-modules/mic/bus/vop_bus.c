@@ -96,7 +96,7 @@ static int vop_dev_match(struct device *dv, struct device_driver *dr)
 	return 0;
 }
 
-static int vop_uevent(struct device *dv, struct kobj_uevent_env *env)
+static int vop_uevent(const struct device *dv, struct kobj_uevent_env *env)
 {
 	struct vop_device *dev = dev_to_vop(dv);
 
@@ -112,13 +112,13 @@ static int vop_dev_probe(struct device *d)
 	return drv->probe(dev);
 }
 
-static int vop_dev_remove(struct device *d)
+static void vop_dev_remove(struct device *d)
 {
 	struct vop_device *dev = dev_to_vop(d);
 	struct vop_driver *drv = drv_to_vop(dev->dev.driver);
 
 	drv->remove(dev);
-	return 0;
+	return;
 }
 
 static struct bus_type vop_bus = {
@@ -175,7 +175,8 @@ vop_register_device(struct device *pdev, int id,
 #else
 	vdev->dev.dma_ops = dma_ops;
 #endif
-  #else vdev->dev.dma_ops = dma_ops;
+#else 
+  vdev->dev.dma_ops = dma_ops;
 #endif
 
   vdev->dev.dma_mask = &vdev->dev.coherent_dma_mask;

@@ -117,7 +117,7 @@ void vop_unregister_device(struct vop_device *dev);
 int vop_register_driver(struct vop_driver *drv);
 void vop_unregister_driver(struct vop_driver *drv);
 
-static inline struct vop_device *dev_to_vop(struct device *dev)
+static inline struct vop_device *dev_to_vop(const struct device *dev)
 {
 	return container_of(dev, struct vop_device, dev);
 }
