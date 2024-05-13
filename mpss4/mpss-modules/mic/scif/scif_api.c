@@ -225,9 +225,10 @@ int scif_close(scif_epd_t epd)
 	spin_unlock(&ep->lock);
 
 	switch (oldstate) {
-	case SCIFEP_ZOMBIE:
+	case SCIFEP_ZOMBIE: 
 		dev_err(scif_info.mdev.this_device,
 			"SCIFAPI close: zombie state unexpected\n");
+   [[__fallthrough__]]; 
 	case SCIFEP_DISCONNECTED:
 		scif_unregister_all_windows(epd);
 		/* Remove from the disconnected list */
@@ -658,6 +659,7 @@ int __scif_connect(scif_epd_t epd, struct scif_port_id *dst, bool non_block)
 			ep->conn_async_state = ASYNC_CONN_IDLE;
 		}
 		/* Fall through */
+    [[__fallthrough__]];
 	case SCIFEP_BOUND:
 		/*
 		 * If a non-blocking connect has been already initiated
