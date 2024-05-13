@@ -157,8 +157,8 @@ static int mic_rid_lut_show(struct seq_file *s, void *pos, bool link)
 	const char *head_str =
 		"idx | bus:dev | enabled\n";
 
-	if (!&xdev->mmio)
-		return -ENODEV;
+//	if (!&xdev->mmio)
+//		return -ENODEV;
 
 	seq_puts(s, head_str);
 	for (i = 0; i < strlen(head_str); ++i)
