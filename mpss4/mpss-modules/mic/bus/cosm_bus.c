@@ -30,13 +30,13 @@ static int cosm_dev_probe(struct device *d)
 	return drv->probe(dev);
 }
 
-static int cosm_dev_remove(struct device *d)
+static void cosm_dev_remove(struct device *d)
 {
 	struct cosm_device *dev = dev_to_cosm(d);
 	struct cosm_driver *drv = drv_to_cosm(dev->dev.driver);
 
 	drv->remove(dev);
-	return 0;
+	return;
 }
 
 static struct bus_type cosm_bus = {
@@ -111,9 +111,20 @@ void cosm_unregister_device(struct cosm_device *dev)
 }
 EXPORT_SYMBOL_GPL(cosm_unregister_device);
 
+static int match_device(struct device *dev, const void *data) {
+    // Assuming 'data' is the device ID we're looking for
+    const int *target_id = data;
+
+    // Replace this with your actual logic to get the device ID from 'dev'
+    int device_id = dev->id;
+
+    return device_id == *target_id;
+}
+
 struct cosm_device *cosm_find_cdev_by_id(int id)
 {
-	struct device *dev = subsys_find_device_by_id(&cosm_bus, id, NULL);
+	//struct device *dev = subsys_find_device_by_id(&cosm_bus, id, NULL);
+  struct device *dev = bus_find_device(&cosm_bus, NULL, &id, match_device); 
 
 	return dev ? container_of(dev, struct cosm_device, dev) : NULL;
 }
