@@ -16,6 +16,7 @@
 #include <linux/version.h>
 #include <linux/slab.h>
 #include "cosm_main.h"
+#include "../common/mic_common.h"
 
 static ssize_t
 mic_sysfs_show_string(char *buf, const char *string)
