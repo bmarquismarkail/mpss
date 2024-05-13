@@ -467,7 +467,8 @@ static inline void __scif_rma_destroy_tcw_helper(struct scif_window *window)
 static inline bool scif_is_iommu_enabled(void)
 {
 #ifdef CONFIG_INTEL_IOMMU
-	return intel_iommu_enabled;
+//	return intel_iommu_enabled;
+  return true;
 #else
 	return false;
 #endif
