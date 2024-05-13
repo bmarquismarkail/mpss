@@ -29,6 +29,8 @@
 #include <linux/intel-iommu.h>
 #elif LINUX_VERSION_CODE <= KERNEL_VERSION(4, 20, 0)
 #include <linux/dma_remapping.h>
+#else
+#include <linux/iommu.h>
 #endif
 
 #include <linux/moduleparam.h>
@@ -39,6 +41,8 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #endif
+
+#include <linux/atomic.h>
 #include "scif_main.h"
 #include "scif_map.h"
 
@@ -55,6 +59,8 @@ static inline struct iova *alloc_iova_mem(void)
     return NULL;
 }
 #endif
+#else 
+#include <linux/iova.h>
 #endif
 
 static bool scif_ulimit_check = true;
@@ -96,7 +102,9 @@ __insert_new_range(struct iova_domain *iovad,
 {
 	struct iova *iova;
 
-	iova = alloc_iova_mem();
+	//iova = alloc_iova_mem();
+  unsigned long size = pfn_hi - pfn_lo + 1;
+  iova = alloc_iova(iovad, size, pfn_hi, true);
 	if (!iova)
 		return iova;
 
@@ -419,13 +427,14 @@ __scif_dec_pinned_vm(struct mm_struct *mm, int nr_pages)
 	if (!mm || !nr_pages)
 		return 0;
 
-	down_write(&mm->mmap_sem);
+	down_write(&mm->mmap_lock);
 #if (defined(RHEL_RELEASE_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)))
         mm->pinned_vm.counter -= nr_pages;
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
-        mm->pinned_vm -= nr_pages;
+        //mm->pinned_vm -= nr_pages;
+        atomic64_sub(nr_pages, &mm->pinned_vm);
 #endif
-	up_write(&mm->mmap_sem);
+	up_write(&mm->mmap_lock);
 	return 0;
 }
 
@@ -437,16 +446,17 @@ __scif_try_inc_pinned_vm(struct mm_struct *mm, int nr_pages)
 	if (!mm || !nr_pages)
 		return 0;
 
-	down_write(&mm->mmap_sem);
+	down_write(&mm->mmap_lock);
 	locked = nr_pages;
 #if (defined(RHEL_RELEASE_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)))
     locked += mm->pinned_vm.counter;
 #else
-	locked += mm->pinned_vm;
+	//locked += mm->pinned_vm;
+  locked += atomic64_read(&mm->pinned_vm);
 #endif
 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
 	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
-		up_write(&mm->mmap_sem);
+		up_write(&mm->mmap_lock);
 		dev_err_ratelimited(scif_info.mdev.this_device,
 			"locked(%lu) > lock_limit(%lu) - " \
 			"please increase memlock ulimit for process\n",
@@ -456,9 +466,10 @@ __scif_try_inc_pinned_vm(struct mm_struct *mm, int nr_pages)
 #if (defined(RHEL_RELEASE_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)))
     mm->pinned_vm.counter = locked;
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
-    mm->pinned_vm = locked;
+    //mm->pinned_vm = locked;
+    atomic64_set(&mm->pinned_vm, locked);
 #endif
-	up_write(&mm->mmap_sem);
+	up_write(&mm->mmap_lock);
 	return 0;
 }
 
