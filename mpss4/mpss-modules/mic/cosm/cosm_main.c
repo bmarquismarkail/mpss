@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/version.h>
 #include "cosm_main.h"
+#include "../common/mic_common.h"
 
 static const char cosm_driver_name[] = "mic";
 
@@ -163,7 +164,7 @@ cosm_is_boot_safe(struct cosm_device *cdev)
 	u64 max_supported_address = cdev->hw_ops->max_supported_address(cdev);
 	u64 max_system_address = __pa(high_memory) - 1;
 
-	if (intel_iommu_enabled)
+	//if (intel_iommu_enabled)
 		return true;
 
 	/*
@@ -762,8 +763,18 @@ static int cosm_driver_probe(struct cosm_device *cdev)
 		log_mic_err(cdev->index, "hw_ops->dev_init failed (rc %d)", rc);
 		goto device_exit;
 	}
+#ifdef RHEL_RELEASE_CODE
+#if (RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 3))
+#define FLAG 1
+#else 
+#define FLAG 0
+#endif /* if  */
+#else 
+#define FLAG 0
+#endif /* ifdef */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) || RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3))
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) || FLAG)
 	cdev->sysfs_node = sysfs_get_dirent(cdev->sysfs_dev->kobj.sd, "state");
 #else
 	cdev->sysfs_node = sysfs_get_dirent(cdev->sysfs_dev->kobj.sd,
@@ -845,7 +856,8 @@ static int __init cosm_init(void)
 {
 	int ret;
 
-	g_cosm_class = class_create(THIS_MODULE, cosm_driver_name);
+	//g_cosm_class = class_create(THIS_MODULE, cosm_driver_name);
+	g_cosm_class = class_create(cosm_driver_name);
 	if (IS_ERR(g_cosm_class)) {
 		ret = PTR_ERR(g_cosm_class);
 		pr_err("cosm server class_create error %d", ret);
