@@ -14,14 +14,26 @@
  * Intel SCIF driver.
  */
 #include <linux/version.h>
-#if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3)
-#include <linux/intel-iommu.h>
+
+#ifdef RHEL_RELEASE_CODE
+  #if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 3)
+    #define FLAG1 1
+  #else
+    #define FLAG1 0
+  #endif /* ifdef  */
 #else
+#define FLAG1 0 
+#endif
+
+#if FLAG1 
+#include <linux/intel-iommu.h>
+#elif LINUX_VERSION_CODE <= KERNEL_VERSION(4, 20, 0)
 #include <linux/dma_remapping.h>
 #endif
+
 #include <linux/moduleparam.h>
 #include <linux/pagemap.h>
-#if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3)
+#if FLAG1 
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>

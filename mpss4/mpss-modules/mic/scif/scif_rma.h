@@ -52,10 +52,15 @@
 #ifndef SCIF_RMA_H
 #define SCIF_RMA_H
 
+#include <linux/version.h>
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 #include <linux/dma_remapping.h>
-#else
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(6,0,0)
 #include <linux/intel-iommu.h>
+#else
+#include <linux/iova.h>
+#include <linux/iommu.h>
 #endif
 #include <linux/mmu_notifier.h>
 

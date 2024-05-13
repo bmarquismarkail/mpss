@@ -19,10 +19,15 @@
 #include <linux/version.h>
 #include <linux/suspend.h>
 #include <linux/iommu.h>
+
+#ifdef RHEL_RELEASE_CODE
 #if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3)
 #include <linux/intel-iommu.h>
 #else
 #include <linux/dma_remapping.h>
+#endif
+#else
+#include <linux/iommu.h>
 #endif
 
 #ifdef MIC_IN_KERNEL_BUILD

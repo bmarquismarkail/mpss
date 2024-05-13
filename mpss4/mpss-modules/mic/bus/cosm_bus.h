@@ -19,7 +19,6 @@
 #include <linux/version.h>
 #include <linux/completion.h>
 #include "../scif/scif.h"
-#include "../common/mic_common.h"
 #include "../common/mic_dev.h"
 
 /**
@@ -92,7 +91,15 @@ struct cosm_device {
 
 	const struct attribute_group **sysfs_attr_group;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) || RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3))
+#ifdef RHEL_RELEASE_CODE
+#if RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(8, 0)
+#define FLAG1 true
+#else 
+#define FLAG1 false;
+#endif
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) || FLAG1)
 	struct kernfs_node *sysfs_node;
 #else
 	struct sysfs_dirent *sysfs_node;

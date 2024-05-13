@@ -18,11 +18,16 @@
 
 #include <linux/types.h>
 #include <linux/version.h>
+#ifdef RHEL_RELEASE_CODE
 #if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7, 3)
 #include <linux/intel-iommu.h>
 #else
 #include <linux/dma_remapping.h>
 #endif
+#else 
+#include <linux/iommu.h>
+#endif
+
 #include <linux/dma-mapping.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -102,10 +107,14 @@ struct mic_mw {
 	#define IOMMU_SUPPORTS_KNL
 #endif
 
+#ifdef RHEL_RELEASE_CODE
 #if RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(8, 0)
 	#define DMA_ALIAS_MEMBER pci_dev_rh->dma_alias_mask
 #else
 	#define DMA_ALIAS_MEMBER dma_alias_mask
+#endif
+#else
+  #define DMA_ALIAS_MEMBER dma_alias_mask
 #endif
 
 #endif
