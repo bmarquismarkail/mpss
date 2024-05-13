@@ -100,7 +100,7 @@ static int scif_dev_match(struct device *dv, struct device_driver *dr)
 	return 0;
 }
 
-static int scif_uevent(struct device *dv, struct kobj_uevent_env *env)
+static int scif_uevent(const struct device *dv, struct kobj_uevent_env *env)
 {
 	struct scif_hw_dev *dev = dev_to_scif(dv);
 
@@ -116,13 +116,13 @@ static int scif_dev_probe(struct device *d)
 	return drv->probe(dev);
 }
 
-static int scif_dev_remove(struct device *d)
+static void scif_dev_remove(struct device *d)
 {
 	struct scif_hw_dev *dev = dev_to_scif(d);
 	struct scif_driver *drv = drv_to_scif(dev->dev.driver);
 
 	drv->remove(dev);
-	return 0;
+	return;
 }
 
 static struct bus_type scif_bus = {

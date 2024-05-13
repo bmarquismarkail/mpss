@@ -143,7 +143,7 @@ scif_register_device(struct device *pdev, int id,
 		     bool card_rel_da);
 void scif_unregister_device(struct scif_hw_dev *sdev);
 
-static inline struct scif_hw_dev *dev_to_scif(struct device *dev)
+static inline struct scif_hw_dev *dev_to_scif(const struct device *dev)
 {
 	return container_of(dev, struct scif_hw_dev, dev);
 }
