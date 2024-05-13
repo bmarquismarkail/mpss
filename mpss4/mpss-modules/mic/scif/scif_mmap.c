@@ -663,13 +663,16 @@ int scif_mmap(struct vm_area_struct *vma, scif_epd_t epd)
 	 * node's physical memory and not via a struct page.
 	 */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
-	vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND | VM_DONTDUMP;
+vm_flags_set(vma, VM_DONTCOPY | VM_DONTEXPAND | VM_DONTDUMP);
+	//vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND | VM_DONTDUMP;
 #else
-	vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND | VM_RESERVED;
+vm_flags_set(vma, VM_DONTCOPY | VM_DONTEXPAND | VM_RESERVED);
+	//vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND | VM_RESERVED;
 #endif
 
 	if (!scifdev_self(ep->remote_dev))
-		vma->vm_flags |= VM_IO | VM_PFNMAP;
+    vm_flags_set(vma, VM_IO | VM_PFNMAP);
+		//vma->vm_flags |= VM_IO | VM_PFNMAP;
 
 	/* Map this range of windows */
 	err = scif_rma_list_mmap(window, start_offset, nr_pages, vma);
