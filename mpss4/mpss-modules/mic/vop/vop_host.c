@@ -236,7 +236,7 @@ static int vop_virtio_add_device(struct vop_vdev *vdev,
 		vr_size = PAGE_ALIGN(vring_size(num, MIC_VIRTIO_RING_ALIGN) +
 			sizeof(struct _mic_vring_info));
 
-		vr->va = dma_zalloc_coherent(dma_dev, vr_size, &vr_addr,
+		vr->va = dma_alloc_coherent(dma_dev, vr_size, &vr_addr,
 					     GFP_KERNEL);
 		if (!vr->va) {
 			ret = -ENOMEM;
