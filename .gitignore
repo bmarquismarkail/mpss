@@ -1,8 +1,10 @@
 .cache/
 *.o
 *.d
-*.mod
+*.mod*
 *.cmd
 modules.order
+Module.symvers
+*.ko
 compile_commands.json
 
