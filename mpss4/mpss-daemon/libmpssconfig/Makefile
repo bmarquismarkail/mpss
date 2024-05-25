@@ -41,7 +41,7 @@ HEADERS = mpssconfig.h libmpsscommon.h mic.h
 all: $(libmpssconfig_dev)
 
 $(libmpssconfig_dev): $(FILES) $(HEADERS)
-	$(CXX) -std=c++11 -lboost_regex $(ALL_CFLAGS) -fpic -shared $(FILES) -o $@ -Wl,-soname,$(libmpssconfig_all)
+	$(CXX) $(ALL_CFLAGS) -fpic -shared $(FILES) -o $@ -Wl,-soname,$(libmpssconfig_all) -lboost_regex 
 
 install:
 	$(INSTALL_d) $(DESTDIR)$(libdir)
