@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright (c) 2016, Intel Corporation.
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -15,12 +15,12 @@
 #
 # See example.c for a demonstration of the various macros.
 
-import sys, re, ConfigParser
+import sys, re, configparser
 from subprocess import Popen, PIPE
 
 def parsecfg(fn):
     global VERNAME, VERDEPS
-    c = ConfigParser.RawConfigParser()
+    c = configparser.RawConfigParser()
     c.read(fn)
 
     VERNAME, = c.sections()  # there may be only one
@@ -71,27 +71,27 @@ def symmap(symtab):
                 assert version in vermap  # must be in VERDEPS
                 vermap[version].append(sym)
         except AssertionError:
-            print >>sys.stderr, 'CURRENT SYMBOL:', sym
-            print >>sys.stderr, 'VERSIONS:', o + d + c
+            print('CURRENT SYMBOL:', sym, file=sys.stderr)
+            print('VERSIONS:', o + d + c, file=sys.stderr)
             raise
     return vermap
 
 def printmap(f, vermap, fns):
     def tag(version):
         return '%s_%s' % (VERNAME, version)
-    print >>f, '/* Version script generated from %s */' % fns
+    print('/* Version script generated from %s */' % fns, file=f)
     for i, (version, deps) in enumerate(VERDEPS):
-        print >>f
-        print >>f, '%s {' % tag(version)
+        print(file=f)
+        print('%s {' % tag(version), file=f)
         if vermap[version]:
-            print >>f, 'global:'
+            print('global:', file=f)
         for symbol in sorted(vermap[version]):
-            print >>f, '\t%s;' % symbol
+            print('\t%s;' % symbol, file=f)
         if i == 0:
-            print >>f, 'local:'
-            print >>f, '\t*;'
+            print('local:', file=f)
+            print('\t*;', file=f)
         deps = [tag(d) for d in deps]
-        print >>f, '}%s;' % (' ' + ' '.join(deps) if deps else '')
+        print('}%s;' % (' ' + ' '.join(deps) if deps else ''), file=f)
 
 def main(argv):
     i = argv.index('--')
@@ -106,7 +106,9 @@ def main(argv):
     symtab = {}
     for fn in argv:
         p = Popen(cmd + ['-DGENMAP_PARSING_PASS', '-E', fn], stdout=PIPE)
-        findsyms(symtab, p.communicate()[0])
+        stdout, _ = p.communicate()
+        decoded_output = stdout.decode('utf-8')
+        findsyms(symtab, decoded_output)
 
     # compute the version map and apply sanity checks
     vermap = symmap(symtab)
