@@ -13,6 +13,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <utility>
 #include "micmgmtCommon.hpp"
 #include "NameHelp_p.hpp"
 
@@ -65,6 +66,16 @@ namespace micmgmt
     {
         name_ = copyFrom.name_;
         help_ = copyFrom.help_;
+    };
+
+    NameHelp& NameHelp::operator=(const NameHelp& other)
+    {
+        if (this != &other)
+        {
+            name_ = other.name_;
+            help_ = other.help_;
+        }
+        return *this;
     };
 
     const std::string& NameHelp::name() const

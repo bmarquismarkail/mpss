@@ -18,6 +18,7 @@
 #include <sstream>
 #include <cstdio>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
 using namespace  std;
 
@@ -65,12 +66,12 @@ namespace micfw
         {
             stringstream ss;
             unsigned char hash[SHA256_DIGEST_LENGTH];
-            SHA256_CTX sha256;
-            if(!SHA256_Init(&sha256))
+            EVP_MD_CTX *sha256 = EVP_MD_CTX_new();
+            if(EVP_DigestInit_ex(sha256, EVP_sha256(), NULL) != 1)
                 goto error;
-            if(!SHA256_Update(&sha256, &f.rawData[0], f.rawData.size()))
+            if(EVP_DigestUpdate(sha256, &f.rawData[0], f.rawData.size()) != 1)
                 goto error;
-            if(!SHA256_Final(hash, &sha256))
+            if(!EVP_DigestFinal_ex(sha256, hash, NULL))
                 goto error;
             for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
                 ss << hex << setw(2) << setfill('0') << (int)hash[i];

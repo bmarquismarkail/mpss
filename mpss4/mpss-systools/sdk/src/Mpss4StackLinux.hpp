@@ -64,6 +64,7 @@ class LibmpssconfigFunctions;
 
 class  Mpss4StackLinux : public Mpss4StackBase
 {
+    using Mpss4StackBase::setDeviceProperty;
 public:
     typedef uint32_t (*ParseFunctionT)( std::string*, const std::string&, const std::string& );
     typedef bool (*IsAdminT)();
@@ -344,7 +345,7 @@ uint32_t Mpss4StackLinux::getSystemDeviceNumbers( std::vector<size_t>* list, Dir
     struct dirent*  entry = NULL;
     while ((entry = dirent.readdir( dir )))
     {
-        if(!entry || !entry->d_name)
+        if(!entry)
             continue;
 
         std::string  filename = entry->d_name;

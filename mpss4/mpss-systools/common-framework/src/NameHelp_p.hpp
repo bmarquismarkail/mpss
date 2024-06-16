@@ -31,6 +31,8 @@ namespace micmgmt
         NameHelp(const std::string& name, const std::string& help);
         NameHelp(const NameHelp& copyFrom);
 
+        NameHelp& operator=(const NameHelp& copyFrom);
+
         const std::string& name() const;
         const std::vector<std::string>& help() const;
     }; // class NameHelp

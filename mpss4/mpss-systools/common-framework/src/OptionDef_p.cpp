@@ -39,6 +39,17 @@ namespace micmgmt
         }
     };
 
+    OptionDef &OptionDef::operator=(const OptionDef &rhs)
+    {
+      if (this != &rhs)
+      {
+          shortLetter_ = rhs.shortLetter_;
+          optionNameHelp_ = rhs.optionNameHelp_;
+          argumentDef_ = rhs.argumentDef_;
+      }
+      return *this;
+    };
+
     const std::string& OptionDef::optionName() const
     {
         return optionNameHelp_.name();

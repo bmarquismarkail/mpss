@@ -34,6 +34,8 @@ namespace micmgmt
                   const std::string& argumentName, const std::vector<std::string>& argumentHelp,
                   const std::string& defVal, EvaluateArgumentCallbackInterface* callback);
 
+        OptionDef &operator=(const OptionDef &rhs);
+
         const std::string& optionName() const;
 
         const std::vector<std::string>& optionHelp() const;

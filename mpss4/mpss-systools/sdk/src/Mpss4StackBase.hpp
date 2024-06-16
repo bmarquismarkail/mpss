@@ -32,6 +32,7 @@ class  Mpss4StackBase : public MpssStackBase
 
 public:
 
+   using MpssStackBase::setDeviceProperty;
    virtual ~Mpss4StackBase();
 
 public:  // STATIC
