@@ -51,6 +51,20 @@
  */
 #include "scif_main.h"
 
+#include <linux/sched/mm.h>
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)
+  static inline void vm_flags_set(struct vm_area_struct *vma, vm_flags_t flags)
+  {
+      vma->vm_flags |= flags;
+  }
+
+  static inline void vm_flags_clear(struct vm_area_struct *vma, vm_flags_t flags)
+  {
+      vma->vm_flags &= ~flags;
+  }
+#endif
+
 /*
  * struct scif_vma_info - Information about a remote memory mapping
  *			  created via scif_mmap(..)

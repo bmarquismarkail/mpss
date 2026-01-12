@@ -30,13 +30,13 @@ static int cosm_dev_probe(struct device *d)
 	return drv->probe(dev);
 }
 
-static void cosm_dev_remove(struct device *d)
+static int cosm_dev_remove(struct device *d)
 {
 	struct cosm_device *dev = dev_to_cosm(d);
 	struct cosm_driver *drv = drv_to_cosm(dev->dev.driver);
 
 	drv->remove(dev);
-	return;
+	return 0;
 }
 
 static struct bus_type cosm_bus = {
