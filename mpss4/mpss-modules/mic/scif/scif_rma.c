@@ -431,14 +431,14 @@ __scif_dec_pinned_vm(struct mm_struct *mm, int nr_pages)
 	if (!mm || !nr_pages)
 		return 0;
 
-	down_write(&mm->mmap_sem);
+	down_write(&mm->mmap_lock);
 #if (defined(RHEL_RELEASE_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)))
         mm->pinned_vm.counter -= nr_pages;
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
         //mm->pinned_vm -= nr_pages;
         atomic64_sub(nr_pages, &mm->pinned_vm);
 #endif
-	up_write(&mm->mmap_sem);
+	up_write(&mm->mmap_lock);
 	return 0;
 }
 
@@ -450,7 +450,7 @@ __scif_try_inc_pinned_vm(struct mm_struct *mm, int nr_pages)
 	if (!mm || !nr_pages)
 		return 0;
 
-	down_write(&mm->mmap_sem);
+	down_write(&mm->mmap_lock);
 	locked = nr_pages;
 #if (defined(RHEL_RELEASE_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)))
     locked += mm->pinned_vm.counter;
@@ -460,7 +460,7 @@ __scif_try_inc_pinned_vm(struct mm_struct *mm, int nr_pages)
 #endif
 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
 	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
-		up_write(&mm->mmap_sem);
+		up_write(&mm->mmap_lock);
 		dev_err_ratelimited(scif_info.mdev.this_device,
 			"locked(%lu) > lock_limit(%lu) - " \
 			"please increase memlock ulimit for process\n",
@@ -473,7 +473,7 @@ __scif_try_inc_pinned_vm(struct mm_struct *mm, int nr_pages)
     //mm->pinned_vm = locked;
     atomic64_set(&mm->pinned_vm, locked);
 #endif
-	up_write(&mm->mmap_sem);
+	up_write(&mm->mmap_lock);
 	return 0;
 }
 

@@ -20,6 +20,7 @@
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/dma-mapping.h>
+#include <linux/dma-map-ops.h>
 
 #ifdef MIC_IN_KERNEL_BUILD
 #include <linux/mic_common.h>

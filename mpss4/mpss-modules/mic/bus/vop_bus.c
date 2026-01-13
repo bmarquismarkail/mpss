@@ -112,13 +112,13 @@ static int vop_dev_probe(struct device *d)
 	return drv->probe(dev);
 }
 
-static int vop_dev_remove(struct device *d)
+static void vop_dev_remove(struct device *d)
 {
 	struct vop_device *dev = dev_to_vop(d);
 	struct vop_driver *drv = drv_to_vop(dev->dev.driver);
 
 	drv->remove(dev);
-	return 0;
+	return;
 }
 
 static struct bus_type vop_bus = {
