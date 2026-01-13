@@ -15,7 +15,7 @@ ALL_CPPFLAGS = -I$(TOPDIR)/common-framework/include -I$(TOPDIR)/sdk/include -I./
 UT_ALL_CPPFLAGS = $(ALL_CPPFLAGS) -I$(TOPDIR)/sdk/src -I$(TOPDIR)/common-framework/src -DUNIT_TESTS -DMICMGMT_MOCK_ENABLE
 
 COMMON_LDFLAGS = -L$(TOPDIR)/common-framework/lib -L$(TOPDIR)/sdk/lib -lpthread $(LDFLAGS)
-ALL_LDFLAGS = $(COMMON_LDFLAGS) -ldl -lsystools-sdk -lsystools-cf
+ALL_LDFLAGS = $(COMMON_LDFLAGS) -lsystools-sdk -lsystools-cf -ldl
 UT_ALL_LDFLAGS = $(COMMON_LDFLAGS) -lgtest -lsystools-sdk-ut -lsystools-cf-ut
 
 EXENAME = micsmc-cli

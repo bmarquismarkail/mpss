@@ -21,7 +21,7 @@ UT_ALL_CPPFLAGS = $(ALL_CPPFLAGS) -DUNIT_TESTS \
 -Wno-sign-compare # Prevent a known issue in gtest
 
 ALL_LDFLAGS = $(LDFLAGS) -lpthread -ldl
-UT_ALL_LDFLAGS = $(ALL_LDFLAGS) -L./lib -lgtest -lgmock
+UT_ALL_LDFLAGS = -L./lib -lgtest -lgmock $(ALL_LDFLAGS)
 
 ifdef DEBUG
 	ALL_CPPFLAGS += -g

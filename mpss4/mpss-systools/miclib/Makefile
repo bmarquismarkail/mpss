@@ -14,8 +14,8 @@ TOPDIR ?= ..
 ALL_CPPFLAGS = -I$(TOPDIR)/common-framework/include -I./include -I$(TOPDIR)/sdk/include -I./src -I$(TOPDIR)/apps/systoolsd/shared $(CPPFLAGS) -fPIC
 UT_ALL_CPPFLAGS = $(ALL_CPPFLAGS) -I$(TOPDIR)/sdk/src -I$(TOPDIR)/common-framework/src -DUNIT_TESTS -DMICMGMT_MOCK_ENABLE
 
-COMMON_LDFLAGS = -L$(TOPDIR)/common-framework/lib -L$(TOPDIR)/sdk/lib -lpthread $(LDFLAGS)
-ALL_LDFLAGS = $(COMMON_LDFLAGS) -ldl -lsystools-sdk -lsystools-cf
+COMMON_LDFLAGS = -L$(TOPDIR)/common-framework/lib -L$(TOPDIR)/sdk/lib $(LDFLAGS) -lpthread
+ALL_LDFLAGS = $(COMMON_LDFLAGS) -lsystools-sdk -lsystools-cf -lpthread  -ldl 
 UT_ALL_LDFLAGS = $(COMMON_LDFLAGS) -lgtest -lsystools-sdk-ut -lsystools-cf-ut
 
 ifdef DEBUG
