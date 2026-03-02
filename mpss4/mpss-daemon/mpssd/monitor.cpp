@@ -326,7 +326,7 @@ get_cookie(struct passwd *pass, char *cookie)
 		len = read(fd, cookie, MPSS_COOKIE_SIZE);
 		close(fd);
 
-		if ((fd = open(cookiename, O_WRONLY|O_CREAT)) < 0) {
+		if ((fd = open(cookiename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR)) < 0) {
 			mpssd_log(PERROR, "Failed to open %s: %s", cookiename, strerror(errno));
 			goto cookie_done;
 		}
