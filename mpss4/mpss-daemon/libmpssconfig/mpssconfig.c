@@ -1176,7 +1176,40 @@ exec_command(const std::string& command, mpss_elist& output)
 
 int load_mic_modules()
 {
-	return exec_command(MIC_MODULES_LOAD);
+	const char* required_modules[] = {
+		"mic_x200_dma",
+		"scif_bus",
+		"vop_bus",
+		"cosm_bus",
+		"scif",
+		"vop",
+		"mic_cosm",
+		"mic_x200"
+	};
+
+	auto all_modules_loaded = [&required_modules]() {
+		struct stat st;
+		char path[256];
+
+		for (size_t i = 0; i < sizeof(required_modules) / sizeof(required_modules[0]); ++i) {
+			snprintf(path, sizeof(path), "%s/%s", MODULESYSFSDIR, required_modules[i]);
+			if (stat(path, &st) != 0) {
+				return false;
+			}
+		}
+		return true;
+	};
+
+	/* In in-tree test runs modules are preloaded via insmod and might not be in modprobe's database. */
+	if (all_modules_loaded()) {
+		return 0;
+	}
+
+	int rc = exec_command(MIC_MODULES_LOAD);
+	if (rc == 0 || all_modules_loaded()) {
+		return 0;
+	}
+	return rc;
 }
 
 int unload_mic_modules()
