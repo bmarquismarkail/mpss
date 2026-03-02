@@ -194,6 +194,7 @@ int mic_hw_init(struct mic_device *xdev, struct pci_dev *pdev);
 void mic_intr_init(struct mic_device *xdev);
 void mic_write_spad(struct mic_device *xdev, unsigned int idx, u32 val);
 u32 mic_read_spad(struct mic_device *xdev, unsigned int idx);
+void mic_log_spad_bases(struct mic_device *xdev, const char *context);
 void mic_set_postcode(struct mic_device *xdev, u8 postcode);
 void mic_reset_fw_status(struct mic_device *xdev);
 void mic_set_download_ready(struct mic_device *xdev);

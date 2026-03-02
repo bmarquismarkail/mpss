@@ -20,10 +20,44 @@
 #include <linux/firmware.h>
 #include <linux/completion.h>
 #include <linux/delay.h>
+#include <linux/moduleparam.h>
 
 #include "../common/mic_dev.h"
 #include "mic_device.h"
 #include "mic_hw.h"
+
+static int force_link_side = -1;
+module_param(force_link_side, int, 0444);
+MODULE_PARM_DESC(force_link_side,
+		 "Override MIC_PORT_ID side detection (-1 auto, 0 card/virt, 1 host/link)");
+
+static u32 mic_read_spad_raw(struct mic_device *xdev, u32 reg_base,
+			     unsigned int idx)
+{
+	return mic_mmio_read(&xdev->mmio, reg_base + MIC_SPAD0 + idx * 4);
+}
+
+void mic_log_spad_bases(struct mic_device *xdev, const char *context)
+{
+	const char *tag = context ? context : "spad-snapshot";
+	u32 link_spad6 = mic_read_spad_raw(xdev, MIC_LINK_EP_OFFSET,
+					   MIC_SPAD_BUFFER_READY);
+	u32 link_spad7 = mic_read_spad_raw(xdev, MIC_LINK_EP_OFFSET,
+					   MIC_SPAD_PROGRESS_CODE);
+	u32 link_spad8 = mic_read_spad_raw(xdev, MIC_LINK_EP_OFFSET,
+					   MIC_SPAD_POST_CODE);
+	u32 virt_spad6 = mic_read_spad_raw(xdev, MIC_VIRT_EP_OFFSET,
+					   MIC_SPAD_BUFFER_READY);
+	u32 virt_spad7 = mic_read_spad_raw(xdev, MIC_VIRT_EP_OFFSET,
+					   MIC_SPAD_PROGRESS_CODE);
+	u32 virt_spad8 = mic_read_spad_raw(xdev, MIC_VIRT_EP_OFFSET,
+					   MIC_SPAD_POST_CODE);
+
+	log_mic_info(xdev->id,
+		     "%s SPADs link[6]=0x%08x link[7]=0x%08x link[8]=0x%08x virt[6]=0x%08x virt[7]=0x%08x virt[8]=0x%08x",
+		     tag, link_spad6, link_spad7, link_spad8,
+		     virt_spad6, virt_spad7, virt_spad8);
+}
 
 static int mic_check_pci_aperture_len(struct mic_device *xdev,
 				      u64 length, u64 offset)
@@ -242,17 +276,24 @@ mic_program_rid_lut(struct mic_device *xdev, struct pci_dev *pdev)
  */
 int mic_hw_init(struct mic_device *xdev, struct pci_dev *pdev)
 {
-	u32 val;
+	bool detected_link_side;
+	u32 val = 0xffffffff;
 	int rc;
+	int port_id_rc;
 
 	/*
 	 * Failing to read MIC_PORT_ID means we are on PCI bus (not PCIe),
 	 * which is only possible on VM, so assume we are on the link side.
 	 */
-	if (pci_read_config_dword(pdev, MIC_PORT_ID, &val))
-		xdev->link_side = 1;
+	port_id_rc = pci_read_config_dword(pdev, MIC_PORT_ID, &val);
+	if (port_id_rc)
+		detected_link_side = true;
 	else
-		xdev->link_side = !!(val & (1 << 31));
+		detected_link_side = !!(val & (1U << 31));
+
+	xdev->link_side = detected_link_side;
+	if (force_link_side == 0 || force_link_side == 1)
+		xdev->link_side = !!force_link_side;
 
 	if (xdev->link_side) {
 		xdev->reg_base = MIC_LINK_EP_OFFSET;
@@ -261,6 +302,15 @@ int mic_hw_init(struct mic_device *xdev, struct pci_dev *pdev)
 		xdev->reg_base = MIC_VIRT_EP_OFFSET;
 		xdev->peer_intr_reg_base = 0x10;
 	}
+
+	log_mic_info(xdev->id,
+		     "MIC_PORT_ID rc=%d val=0x%08x detected_link_side=%d active_link_side=%d reg_base=0x%x",
+		     port_id_rc, val, detected_link_side, xdev->link_side,
+		     xdev->reg_base);
+	if (force_link_side == 0 || force_link_side == 1)
+		log_mic_info(xdev->id, "force_link_side override=%d",
+			     force_link_side);
+	mic_log_spad_bases(xdev, "mic_hw_init");
 
 	rc = mic_program_rid_lut(xdev, pdev);
 	if (rc) {
@@ -371,12 +421,25 @@ bool mic_is_fw_ready(struct mic_device *xdev)
 void mic_hw_send_gpio_signal(struct mic_device *xdev, int gpio_type, int signal_length)
 {
 	u32 out_reg;
+	u32 low_reg;
+	u32 high_reg;
+	u32 low_readback;
+	u32 high_readback;
 	out_reg = mic_mmio_read(&xdev->mmio, MIC_GPIO_OUT_REG);
+	low_reg = out_reg & ~gpio_type;
+	high_reg = out_reg | gpio_type;
 
-	mic_mmio_write(&xdev->mmio, out_reg & ~gpio_type, MIC_GPIO_OUT_REG);
+	mic_mmio_write(&xdev->mmio, low_reg, MIC_GPIO_OUT_REG);
+	low_readback = mic_mmio_read(&xdev->mmio, MIC_GPIO_OUT_REG);
 
 	msleep(signal_length);
-	mic_mmio_write(&xdev->mmio, out_reg | gpio_type, MIC_GPIO_OUT_REG);
+	mic_mmio_write(&xdev->mmio, high_reg, MIC_GPIO_OUT_REG);
+	high_readback = mic_mmio_read(&xdev->mmio, MIC_GPIO_OUT_REG);
+
+	log_mic_info(xdev->id,
+		     "GPIO<%x> pulse %dms reg 0x%x -> low 0x%x (rb 0x%x) -> high 0x%x (rb 0x%x)",
+		     gpio_type, signal_length, out_reg, low_reg, low_readback,
+		     high_reg, high_readback);
 	dev_dbg(&xdev->pdev->dev, "send signal to GPIO<%x> %d\n", gpio_type, signal_length);
 }
 
@@ -776,9 +839,30 @@ struct mic_alut mic_alut_get(struct mic_device *xdev, u8 index)
 
 u8 mic_read_post_code(struct mic_device *xdev)
 {
-	u32 val = mic_read_spad(xdev, MIC_SPAD_PROGRESS_CODE);
+	u32 progress = mic_read_spad(xdev, MIC_SPAD_PROGRESS_CODE);
+	u8 val = (u8)(progress >> 24);
 
-	return (u8)(val >> 24);
+	/*
+	 * Some firmware revisions expose post code in SPAD8.
+	 * Keep SPAD7 as primary source and only fall back when SPAD7 is zero.
+	 */
+	if (val == 0) {
+		u32 legacy_post = mic_read_spad(xdev, MIC_SPAD_POST_CODE);
+		u8 legacy_val = (u8)(legacy_post >> 24);
+
+		if (legacy_val == 0)
+			legacy_val = (u8)(legacy_post & 0xff);
+
+		if (legacy_val != 0) {
+			if (printk_ratelimit())
+				log_mic_info(xdev->id,
+					     "post code fallback: spad7=0x%08x spad8=0x%08x code=0x%02x",
+					     progress, legacy_post, legacy_val);
+			val = legacy_val;
+		}
+	}
+
+	return val;
 }
 
 /**

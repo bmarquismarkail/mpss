@@ -14,12 +14,18 @@
  * Intel MIC Host driver.
  */
 #include <linux/pci.h>
+#include <linux/iommu.h>
 #include <linux/moduleparam.h>
 
 #include "../common/mic_dev.h"
 #include "mic_device.h"
 #include "mic_hw.h"
 #include "mic_alut.h"
+
+static bool enable_alut;
+module_param(enable_alut, bool, 0644);
+MODULE_PARM_DESC(enable_alut,
+		 "Enable A-LUT programming on host side (default: disabled)");
 
 static inline u8 mic_sys_addr_to_alut(struct mic_device *xdev, dma_addr_t pa)
 {
@@ -364,9 +370,26 @@ int mic_alut_init(struct mic_device *xdev)
 	int i, err = 0;
 	dma_addr_t dma_addr;
 	struct mic_alut_info *alut;
-	/* don't enable alut if IOMMU is enabled */
-	//if (intel_iommu_enabled)
+	struct iommu_domain *domain =
+		iommu_get_domain_for_dev(&xdev->pdev->dev);
+	unsigned int domain_type = domain ? domain->type : 0;
+
+	if (!enable_alut) {
+		log_mic_info(xdev->id,
+			     "ALUT disabled (enable_alut=0) iommu_present=%d iommu_default_passthrough=%d iommu_mapped=%d domain_type=0x%x",
+			     iommu_present(&pci_bus_type),
+			     iommu_default_passthrough(),
+			     device_iommu_mapped(&xdev->pdev->dev),
+			     domain_type);
 		return 0;
+	}
+
+	log_mic_info(xdev->id,
+		     "ALUT enabled (enable_alut=1) iommu_present=%d iommu_default_passthrough=%d iommu_mapped=%d domain_type=0x%x",
+		     iommu_present(&pci_bus_type),
+		     iommu_default_passthrough(),
+		     device_iommu_mapped(&xdev->pdev->dev),
+		     domain_type);
 
 	xdev->alut = kzalloc(sizeof(*xdev->alut), GFP_KERNEL);
 	if (!xdev->alut)

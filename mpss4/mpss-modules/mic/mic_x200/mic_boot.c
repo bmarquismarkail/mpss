@@ -762,9 +762,20 @@ static int
 mic_reset(struct cosm_device *cdev)
 {
 	struct mic_device *xdev = cosmdev_to_xdev(cdev);
+	u32 spad6;
+	u32 spad7;
+	u32 spad8;
+	u8 post_code;
 
 	mic_stop(xdev);
 	mic_reset_fw_status(xdev);
+	spad6 = mic_read_spad(xdev, MIC_SPAD_BUFFER_READY);
+	spad7 = mic_read_spad(xdev, MIC_SPAD_PROGRESS_CODE);
+	spad8 = mic_read_spad(xdev, MIC_SPAD_POST_CODE);
+	log_mic_info(xdev->id,
+		     "reset pre-signal SPADs: spad6=0x%08x spad7=0x%08x spad8=0x%08x",
+		     spad6, spad7, spad8);
+	mic_log_spad_bases(xdev, "reset pre-signal");
 
 	log_mic_info(xdev->id, "sending long GPIO2 signal to power off");
 	mic_hw_send_gpio_signal(xdev, MIC_GPIO2, MIC_GPIO_LONG);
@@ -776,6 +787,30 @@ mic_reset(struct cosm_device *cdev)
 	mic_hw_send_gpio_signal(xdev, MIC_GPIO2, MIC_GPIO_SHORT);
 
 	mic_set_postcode(xdev, MIC_X200_POST_CODE_RESETTING);
+	msleep(250);
+	spad6 = mic_read_spad(xdev, MIC_SPAD_BUFFER_READY);
+	spad7 = mic_read_spad(xdev, MIC_SPAD_PROGRESS_CODE);
+	spad8 = mic_read_spad(xdev, MIC_SPAD_POST_CODE);
+	log_mic_info(xdev->id,
+		     "reset post-signal SPADs: spad6=0x%08x spad7=0x%08x spad8=0x%08x",
+		     spad6, spad7, spad8);
+	mic_log_spad_bases(xdev, "reset post-signal");
+
+	post_code = mic_read_post_code(xdev);
+	if (post_code == 0x80) {
+		log_mic_info(xdev->id,
+			     "post code 0x80 after cold reset, sending GPIO1 short pulse");
+		mic_hw_send_gpio_signal(xdev, MIC_GPIO1, MIC_GPIO_SHORT);
+		mic_set_postcode(xdev, MIC_X200_POST_CODE_RESETTING);
+		msleep(250);
+		spad6 = mic_read_spad(xdev, MIC_SPAD_BUFFER_READY);
+		spad7 = mic_read_spad(xdev, MIC_SPAD_PROGRESS_CODE);
+		spad8 = mic_read_spad(xdev, MIC_SPAD_POST_CODE);
+		log_mic_info(xdev->id,
+			     "reset post-fallback SPADs: spad6=0x%08x spad7=0x%08x spad8=0x%08x",
+			     spad6, spad7, spad8);
+		mic_log_spad_bases(xdev, "reset post-fallback");
+	}
 	return 0;
 }
 
@@ -797,6 +832,7 @@ mic_reset_warm(struct cosm_device *cdev)
 	mic_hw_send_gpio_signal(xdev, MIC_GPIO1, MIC_GPIO_SHORT);
 
 	mic_set_postcode(xdev, MIC_X200_POST_CODE_RESETTING);
+	mic_log_spad_bases(xdev, "reset_warm post-signal");
 	return 0;
 }
 

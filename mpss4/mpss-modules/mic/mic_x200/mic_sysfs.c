@@ -55,6 +55,8 @@ struct mic_sysfs_dev_attr mic_sysfs_dev_attr_##_name =		\
 #define to_mic_sysfs_dev_attr(_dev_attr) \
 	container_of(_dev_attr, struct mic_sysfs_dev_attr, dev_attr)
 
+#define MIC_SYSFS_RAW_SPAD8_INDEX 100
+
 static inline struct mic_device *sysfsdev_to_xdev(struct device *dev)
 {
 	struct cosm_device *cdev = dev_get_drvdata(dev);
@@ -73,6 +75,9 @@ static ssize_t mic_sysfs_spad_show(struct device *dev,
 	if (index == MIC_SPAD_POST_CODE) {
 		u8 val = mic_read_post_code(xdev);
 		return scnprintf(buf, PAGE_SIZE, "0x%02x\n", val);
+	} else if (index == MIC_SYSFS_RAW_SPAD8_INDEX) {
+		return scnprintf(buf, PAGE_SIZE, "0x%08x\n",
+				 mic_read_spad(xdev, MIC_SPAD_POST_CODE));
 	} else {
 		return scnprintf(buf, PAGE_SIZE, "0x%08x\n",
 				 mic_read_spad(xdev, index));
@@ -87,6 +92,7 @@ MIC_SYSFS_ATTR(spad4, S_IRUGO, mic_sysfs_spad_show, 4);
 MIC_SYSFS_ATTR(spad5, S_IRUGO, mic_sysfs_spad_show, 5);
 MIC_SYSFS_ATTR(spad6, S_IRUGO, mic_sysfs_spad_show, 6);
 MIC_SYSFS_ATTR(spad7, S_IRUGO, mic_sysfs_spad_show, 7);
+MIC_SYSFS_ATTR(spad8, S_IRUGO, mic_sysfs_spad_show, MIC_SYSFS_RAW_SPAD8_INDEX);
 MIC_SYSFS_ATTR(post_code, S_IRUGO, mic_sysfs_spad_show, MIC_SPAD_POST_CODE);
 
 static struct attribute *mic_sysfs_spad_attributes[] = {
@@ -98,6 +104,7 @@ static struct attribute *mic_sysfs_spad_attributes[] = {
 	&mic_sysfs_dev_attr_spad5.dev_attr.attr,
 	&mic_sysfs_dev_attr_spad6.dev_attr.attr,
 	&mic_sysfs_dev_attr_spad7.dev_attr.attr,
+	&mic_sysfs_dev_attr_spad8.dev_attr.attr,
 	&mic_sysfs_dev_attr_post_code.dev_attr.attr,
 	NULL
 };
