@@ -104,7 +104,7 @@ static struct task_struct *server_thread;
 static scif_epd_t listen_epd;
 
 /* Store MIC card's shutdown status internally when it is received */
-void cosm_status_handler(struct cosm_device *cdev, u8 state)
+static void cosm_status_handler(struct cosm_device *cdev, u8 state)
 {
 	const char *state_str = cosm_states[state].string;
 

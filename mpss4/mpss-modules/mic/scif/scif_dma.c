@@ -253,10 +253,8 @@ static const struct mmu_notifier_ops scif_mmu_notifier_ops = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
     .invalidate_page = scif_mmu_notifier_invalidate_page,
 #else
-    /* Kernel 4.13+ no longer has invalidate_page; set all other struct memember explicitly */
     .clear_young = NULL,
     .test_young = NULL,
-    .invalidate_range = NULL,
 #endif
 	.invalidate_range_start = scif_mmu_notifier_invalidate_range_start,
 	.invalidate_range_end = scif_mmu_notifier_invalidate_range_end};

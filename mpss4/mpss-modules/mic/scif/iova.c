@@ -21,6 +21,11 @@
 #include <linux/slab.h>
 
 #include "scif_main.h"
+
+struct iova *alloc_iova_mem(void);
+void free_iova_mem(struct iova *iova);
+void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
+
 struct iova *alloc_iova_mem(void)
 {
 	return kmalloc(sizeof(struct iova), GFP_ATOMIC);
@@ -456,4 +461,3 @@ copy_reserved_iova(struct iova_domain *from, struct iova_domain *to)
 	spin_unlock_irqrestore(&from->iova_rbtree_lock, flags);
 }
 #endif
-

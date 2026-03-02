@@ -43,7 +43,7 @@ static int mic_check_pci_aperture_len(struct mic_device *xdev,
 /*
  * mic_rid_lut_offset - calculate mmio offset of given RID-LUT entry
  */
-u32 mic_rid_lut_offset(bool link_side, int index)
+static u32 mic_rid_lut_offset(bool link_side, int index)
 {
 	u32 base_reg;
 

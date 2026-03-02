@@ -100,7 +100,7 @@ static int scif_dev_match(struct device *dv, struct device_driver *dr)
 	return 0;
 }
 
-static int scif_uevent(struct device *dv, struct kobj_uevent_env *env)
+static int scif_uevent(const struct device *dv, struct kobj_uevent_env *env)
 {
 	struct scif_hw_dev *dev = dev_to_scif(dv);
 

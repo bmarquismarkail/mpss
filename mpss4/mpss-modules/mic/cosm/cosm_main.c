@@ -856,7 +856,7 @@ static int __init cosm_init(void)
 {
 	int ret;
 
-	g_cosm_class = class_create(THIS_MODULE, cosm_driver_name);
+	g_cosm_class = class_create(cosm_driver_name);
 	if (IS_ERR(g_cosm_class)) {
 		ret = PTR_ERR(g_cosm_class);
 		pr_err("cosm server class_create error %d", ret);

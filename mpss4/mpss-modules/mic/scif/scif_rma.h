@@ -63,6 +63,7 @@
 #include <linux/iommu.h>
 #endif
 #include <linux/mmu_notifier.h>
+#include <linux/mmzone.h>
 
 #include "../bus/scif_bus.h"
 
@@ -70,6 +71,10 @@
 #ifndef BIT_ULL
 #define BIT_ULL(nr)	(1ULL << (nr))
 #endif
+#endif
+
+#ifndef MAX_ORDER
+#define MAX_ORDER MAX_PAGE_ORDER
 #endif
 
 /* If this bit is set then the mark is a remote fence mark */
