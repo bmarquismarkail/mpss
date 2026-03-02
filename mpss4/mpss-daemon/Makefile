@@ -15,7 +15,10 @@ includedir = $(prefix)/include/mic
 libdir = $(prefix)/lib64
 sysconfdir = /etc
 
-CFLAGS += -fstack-protector -Wall -fvisibility=hidden -g -O2 $(CPPFLAGS)
+CFLAGS += -fstack-protector -Wall -fvisibility=hidden -fpermissive -g -O2 \
+	-I$(CURDIR)/../mpss-modules/mic/common \
+	-I$(CURDIR)/../mpss-libscif \
+	$(CPPFLAGS)
 LDFLAGS += -Wl,-z,relro,-z,now
 
 all:
@@ -44,4 +47,3 @@ clean:
 	cd libmpssconfig; make clean
 	cd mpssd; make clean
 	cd micctrl; make clean
-
