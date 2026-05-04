@@ -58,7 +58,9 @@ mpssut_mkdir(char *dir, uid_t uid, gid_t gid, int mode)
 	if (mkdir(dirname, mode))
 		return errno;
 
-	chown(dirname, uid, gid);
+	if (chown(dirname, uid, gid))
+		return errno;
+
 	return 0;
 }
 

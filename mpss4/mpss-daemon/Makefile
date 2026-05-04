@@ -22,28 +22,28 @@ CFLAGS += -fstack-protector -Wall -fvisibility=hidden -fpermissive -g -O2 \
 LDFLAGS += -Wl,-z,relro,-z,now
 
 all:
-	cd libmpssconfig; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd libmpssconfig; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR)
-	cd mpssd; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd mpssd; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR)
-	cd micctrl; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd micctrl; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR)
 
 install:
-	cd libmpssconfig; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd libmpssconfig; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR) install
-	cd mpssd; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd mpssd; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR) install
-	cd micctrl; make prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
+	+cd micctrl; $(MAKE) prefix=$(prefix) exec_prefix=$(exec_prefix) sysconfdir=$(sysconfdir) \
 		includedir=$(includedir) libdir=$(libdir) \
 		CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(DESTDIR) install
 
 clean:
-	cd libmpssconfig; make clean
-	cd mpssd; make clean
-	cd micctrl; make clean
+	+cd libmpssconfig; $(MAKE) clean
+	+cd mpssd; $(MAKE) clean
+	+cd micctrl; $(MAKE) clean

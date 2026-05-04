@@ -170,9 +170,9 @@ initdefaults(struct mic_info *miclist, bool force, int remove_mode)
 			if (limits_stream.is_open()) {
 				limits_stream << "*\t" << "soft\t" << "memlock\t" << "unlimited\n";
 				limits_stream << "*\t" << "hard\t" << "memlock\t" << "unlimited\n";
-				display(PFS, ("Created " + mpss_limits_file).c_str());
+				display(PFS, "Created %s\n", mpss_limits_file.c_str());
 			} else {
-				display(PERROR, (mpss_limits_file + " file could not be created)\n").c_str());
+				display(PERROR, "%s file could not be created\n", mpss_limits_file.c_str());
 			}
 		}
 	}

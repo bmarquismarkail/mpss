@@ -270,7 +270,8 @@ get_cookie(struct passwd *pass, char *cookie)
 	if (seteuid(pass->pw_uid) < 0) {
 		mpssd_log(PERROR, "%s Cannot create: Failed to seteuid to uid %d : %s",
 				cookiename, pass->pw_uid, strerror(errno));
-		setegid(0);
+		if (setegid(0) < 0)
+			mpssd_log(PERROR, "%s Cannot restore egid 0: %s", cookiename, strerror(errno));
 		return -1;
 	}
 
@@ -331,17 +332,33 @@ get_cookie(struct passwd *pass, char *cookie)
 			goto cookie_done;
 		}
 
-		write(fd, cookie, len);
-		fchmod(fd, S_IRUSR);
-		fchown(fd, pass->pw_uid, pass->pw_gid);
+		if (write(fd, cookie, len) != len) {
+			mpssd_log(PERROR, "Failed to write cookie %s: %s", cookiename, strerror(errno));
+			close(fd);
+			goto cookie_done;
+		}
+
+		if (fchmod(fd, S_IRUSR) < 0) {
+			mpssd_log(PERROR, "Failed to set permissions on %s: %s", cookiename, strerror(errno));
+			close(fd);
+			goto cookie_done;
+		}
+
+		if (fchown(fd, pass->pw_uid, pass->pw_gid) < 0) {
+			mpssd_log(PERROR, "Failed to set ownership on %s: %s", cookiename, strerror(errno));
+			close(fd);
+			goto cookie_done;
+		}
 		close(fd);
 	}
 
 	err = 0;
 
 cookie_done:
-	seteuid(0);
-	setegid(0);
+	if (seteuid(0) < 0)
+		mpssd_log(PERROR, "%s Cannot restore euid 0: %s", cookiename, strerror(errno));
+	if (setegid(0) < 0)
+		mpssd_log(PERROR, "%s Cannot restore egid 0: %s", cookiename, strerror(errno));
 	return err;
 }
 

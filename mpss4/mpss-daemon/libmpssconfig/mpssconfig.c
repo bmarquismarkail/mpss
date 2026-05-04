@@ -299,7 +299,7 @@ parse_network_parameters(const std::vector<std::string>& args, const std::string
 
 		keyvalues[key] = value;
 	}
-	return std::move(keyvalues);
+	return keyvalues;
 }
 
 bool is_ip_address_valid(int type, const std::string& ip_address)
